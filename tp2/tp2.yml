@@ -1,0 +1,43 @@
+- name: Installer apache2
+  hosts: all
+  become: yes
+  tasks:
+    - name: Installer le paquet apache2
+      ansible.builtin.apt:
+        name: apache2
+        state: present
+        update_cache: yes
+
+- name: Installer mysql-server
+  hosts: all
+  become: yes
+  tasks:
+    - name: Installer le paquet mysql-server
+      ansible.builtin.apt:
+        name: mysql-server
+        state: present
+        update_cache: yes
+
+
+
+- name: Verification de l'installation d'apache2 + modification html et démarrage
+  hosts: all
+  become: yes
+  tasks:
+    - name: Vérifier si apache2 est installé
+      ansible.builtin.package_facts:
+
+    - name: Si installé modification de l'index.html
+      ansible.builtin.copy:
+        dest: /var/www/html/index.html
+        content: "Bonjour depuis Ansible\n"
+        owner: www-data
+        group: www-data 
+      when: "'apache2' in ansible_facts.packages"
+
+    - name: Démarrer et activer apache2
+      ansible.builtin.service:
+        name: apache2
+        state: started
+        enabled: yes
+      when: "'apache2' in ansible_facts.packages"
