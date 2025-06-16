@@ -1,0 +1,14 @@
+{% set day_num = ansible_date_time.day | int %}
+{% set hour_num = ansible_date_time.hour | int %}
+
+{% if day_num is divisibleby 2 %}
+pair et
+{% else %}
+impair et
+{% endif %}
+
+{% if hour_num < 12 %}
+avant midi
+{% else %}
+plus tard que midi
+{% endif %}

@@ -80,3 +80,18 @@
         group: root
         mode: '0644'
       when: web_service != 'none'
+
+
+- name: Écrire un message selon le moment du jour 
+  hosts: all
+  become: yes
+  tasks:
+
+    - name: Copier le message personnalisé dans /etc/jour
+      ansible.builtin.template:
+        src: jour.j2
+        dest: /etc/jour
+        owner: root
+        group: root
+        mode: '0644'
+
