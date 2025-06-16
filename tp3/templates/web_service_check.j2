@@ -1,0 +1,8 @@
+{% if 'apache2' in ansible_facts.packages %}
+apache2
+{% elif 'nginx' in ansible_facts.packages %}
+nginx
+{% else %}
+none
+{% endif %}
+
