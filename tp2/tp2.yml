@@ -29,10 +29,14 @@
 
     - name: Si installé modification de l'index.html
       ansible.builtin.copy:
-        dest: /var/www/html/index.html
+        dest: /var/www/html/{{ item }}
         content: "Bonjour depuis Ansible\n"
         owner: www-data
         group: www-data 
+        mode: '0644'
+      loop:
+        - index.html
+        - accueil.html
       when: "'apache2' in ansible_facts.packages"
 
     - name: Démarrer et activer apache2
