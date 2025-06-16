@@ -1,40 +1,32 @@
 - name: Installer apache2 et mysql-server
   hosts: webserversapache
+  become: yes
   tasks:
-    - name: Setup webserversapache
-      when: inventory_hostname in groups['webserverapache']
-      block:
+    - name: Définir les paquets à installer pour webserversapache
+      ansible.builtin.set_fact:
+        ws_packages: ['apache2', 'mysql-server']
 
-        - name: Define webserver packages
-          ansible.builtin.set_fact:
-            ws_packages: ['apache2', 'mysql-server']
+    - name: Installer les paquets webserversapache
+      ansible.builtin.apt:
+        name: "{{ item }}"
+        state: present
+        update_cache: yes
+      loop: "{{ ws_packages }}"
 
-        - name: Install webserverapache packages
-          ansible.builtin.apt:
-            name: "{{ item }}"
-            state: present
-            update_cache: true
-          become: true
-          loop: "{{ ws_packages }}"
-
-- name: Installer git nginx et cowsay
+- name: Installer git, nginx et cowsay
   hosts: webserversnginx
+  become: yes
   tasks:
-    - name: Setup webserversnginx
-      when: inventory_hostname in groups['webservernginx']
-      block:
+    - name: Définir les paquets à installer pour webserversnginx
+      ansible.builtin.set_fact:
+        ws_packages: ['git', 'nginx', 'cowsay']
 
-        - name: Define webservernginx packages
-          ansible.builtin.set_fact:
-            ws_packages: ['git', 'nginx', 'cowsay']
-
-        - name: Install webservernginx packages
-          ansible.builtin.apt:
-            name: "{{ item }}"
-            state: present
-            update_cache: true
-          become: true
-          loop: "{{ ws_packages }}"
+    - name: Installer les paquets webserversnginx
+      ansible.builtin.apt:
+        name: "{{ item }}"
+        state: present
+        update_cache: yes
+      loop: "{{ ws_packages }}"
 
 - name: Installer ufw uniquement sur Ubuntu
   hosts: all
