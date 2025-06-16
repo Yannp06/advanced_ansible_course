@@ -60,6 +60,10 @@
         mode: '0644'
       when: web_service != 'none'
 
+    - name: Récupérer la date et l'heure actuelles
+      ansible.builtin.command: date "+%Y-%m-%d %H:%M:%S"
+      register: current_datetime
+
     - name: Démarrer et activer le service web (apache2 ou nginx)
       ansible.builtin.service:
         name: "{{ web_service }}"
@@ -67,3 +71,12 @@
         enabled: yes
       when: web_service != 'none'
 
+    - name: Écrire dans le fichier log la date de démarrage du service
+      ansible.builtin.lineinfile:
+        path: /var/log/service_start.log
+        create: yes
+        line: "Service {{ web_service }} démarré le {{ current_datetime.stdout }} sur {{ inventory_hostname }}"
+        owner: root
+        group: root
+        mode: '0644'
+      when: web_service != 'none'
