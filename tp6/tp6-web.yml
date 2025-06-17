@@ -1,0 +1,40 @@
+---
+- name: Installer apache2 et prérequis WordPress
+  hosts: webservers
+  become: true
+  roles:
+    - geerlingguy.apache
+
+  tasks:
+    - name: Installer les modules requis pour WordPress
+      ansible.builtin.apt:
+        name:
+          - php
+          - php-mysql
+          - php-curl
+          - php-gd
+          - php-mbstring
+          - php-xml
+          - php-xmlrpc
+          - libapache2-mod-php
+        state: present
+        update_cache: true
+
+    - name: Activer le module rewrite d'apache
+      community.general.apache2_module:
+        name: rewrite
+        state: present
+      notify: Restart apache
+
+  handlers:
+    - name: Restart apache
+      ansible.builtin.service:
+        name: apache2
+        state: restarted
+
+- name: Installer WordPress avec le rôle oefenweb.wordpress
+  hosts: webservers
+  become: true
+  roles:
+    - oefenweb.wordpress
+

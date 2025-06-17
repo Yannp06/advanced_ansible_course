@@ -1,0 +1,4 @@
+# requirements.yml
+- src: geerlingguy.apache
+- src: geerlingguy.mysql
+- src: oefenweb.wordpress

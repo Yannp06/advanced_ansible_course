@@ -1,0 +1,6 @@
+---
+- name: Installer MySQL Server sur la machine DB
+  hosts: database
+  become: true
+  roles:
+    - geerlingguy.mysql
