@@ -4,6 +4,7 @@
   gather_facts: no
   vars:
     csv_file: "./temperature.csv"
+    api_url: "https://api.open-meteo.com/v1/forecast?latitude=48.86&longitude=2.33&hourly=temperature_2m"
 
   tasks:
     - name: Lire, nettoyer et traiter le fichier CSV
@@ -18,3 +19,4 @@
     - name: Afficher le contenu traité du CSV pour vérification
       ansible.builtin.debug:
         var: csv_processed
+
