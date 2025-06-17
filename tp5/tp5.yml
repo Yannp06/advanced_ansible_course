@@ -1,0 +1,19 @@
+---
+- name: Import playbook tp3
+  import_playbook: tp3.yml
+- name: Import playbook tp3
+  import_playbook: tp4.yml
+- name: Écrire la date et l'heure dans /etc/last_changed
+  hosts: all
+  become: true
+  tasks:
+    - name: Récupérer la date et l'heure actuelles
+      ansible.builtin.command: date '+%Y-%m-%d %H:%M:%S'
+      register: current_date
+    - name: Enregistrer la date dans /etc/last_changed
+      ansible.builtin.copy:
+        content: "{{ current_date.stdout }}\n"
+        dest: /etc/last_changed
+        owner: root
+        group: root
+        mode: '0644'

@@ -1,0 +1,84 @@
+- name: Installer apache2 et mysql-server
+  hosts: webserversapache
+  become: true
+  tasks:
+    - name: Définir les paquets à installer pour webserversapache
+      ansible.builtin.set_fact:
+        ws_packages: ['apache2', 'mysql-server']
+
+    - name: Installer les paquets webserversapache
+      ansible.builtin.apt:
+        name: "{{ item }}"
+        state: present
+        update_cache: true
+      loop: "{{ ws_packages }}"
+- name: Installer git, nginx et cowsay
+  hosts: webserversnginx
+  become: true
+  tasks:
+    - name: Définir les paquets à installer pour webserversnginx
+      ansible.builtin.set_fact:
+        ws_packages: ['git', 'nginx', 'cowsay']
+    - name: Installer les paquets webserversnginx
+      ansible.builtin.apt:
+        name: "{{ item }}"
+        state: present
+        update_cache: true
+      loop: "{{ ws_packages }}"
+- name: Installer ufw uniquement sur Ubuntu
+  hosts: all
+  become: true
+  tasks:
+    - name: Installer ufw sur Ubuntu
+      ansible.builtin.apt:
+        name: ufw
+        state: present
+        update_cache: true
+      when: ansible_facts['os_family'] == "Debian" and ansible_facts['distribution'] == "Ubuntu"
+
+- name: Modifier la page HTML si apache2 ou nginx est installé et démarrer le service
+  hosts: all
+  become: true
+  tasks:
+    - name: Collecter les paquets installés
+      ansible.builtin.package_facts:
+    - name: Définir le service web installé en utilisant le template web_service_check.j2
+      ansible.builtin.set_fact:
+        web_service: "{{ lookup('template', 'web_service_check.j2') | trim }}"
+    - name: Copier le template index.html si apache2 ou nginx est installé
+      ansible.builtin.template:
+        src: index.html.j2
+        dest: "{{ (web_service == 'apache2') | ternary('/var/www/html/index.html', '/usr/share/nginx/html/index.html') }}"
+        owner: "{{ (web_service == 'apache2') | ternary('www-data', 'nginx') }}"
+        group: "{{ (web_service == 'apache2') | ternary('www-data', 'nginx') }}"
+        mode: '0644'
+      when: web_service != 'none'
+    - name: Récupérer la date et l'heure actuelles
+      ansible.builtin.command: date "+%Y-%m-%d %H:%M:%S"
+      register: current_datetime
+    - name: Démarrer et activer le service web (apache2 ou nginx)
+      ansible.builtin.service:
+        name: "{{ web_service }}"
+        state: started
+        enabled: true
+      when: web_service != 'none'
+    - name: Écrire dans le fichier log la date de démarrage du service
+      ansible.builtin.lineinfile:
+        path: /var/log/service_start.log
+        create: true
+        line: "Service {{ web_service }} démarré le {{ current_datetime.stdout }} sur {{ inventory_hostname }}"
+        owner: root
+        group: root
+        mode: '0644'
+      when: web_service != 'none'
+- name: Écrire un message selon le moment du jour
+  hosts: all
+  become: true
+  tasks:
+    - name: Copier le message personnalisé dans /etc/jour
+      ansible.builtin.template:
+        src: jour.j2
+        dest: /etc/jour
+        owner: root
+        group: root
+        mode: '0644'
