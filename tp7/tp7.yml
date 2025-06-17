@@ -7,22 +7,35 @@
 
   tasks:
     - name: Lire le fichier CSV
-      ansible.builtin.slurp:
-        src: "{{ csv_file }}"
-      register: csv_content
-    - name: Convertir le contenu base64 en chaîne
-      set_fact:
-        csv_text: "{{ csv_content.content | b64decode }}"
-    - name: Convertir CSV en liste de dictionnaires
-      set_fact:
-        csv_list: |
-          {% set lines = csv_text.split('\n')[1:] %}
-          {% set result = [] %}
-          {% for line in lines if line | trim != '' %}
-            {% set parts = line.split(',') | map('trim') | list %}
-            {% if parts | length == 2 %}
-              {% set item = {'time': parts[0], 'temperature': parts[1]} %}
-              {% set _ = result.append(item) %}
-            {% endif %}
-          {% endfor %}
-          {{ result }}
+      ansible.builtin.set_fact:
+        csv_content: "{{ lookup('file', csv_file).splitlines() }}"
+      # Lit le fichier et divise le contenu en lignes
+
+    - name: Supprimer la ligne d'en-tête
+      ansible.builtin.set_fact:
+        csv_content_no_header: "{{ csv_content | reject('equalto', 'time,temperature') | list }}"
+
+    - name: Suppression de doublons
+      ansible.builtin.set_fact:
+        csv_content_uniq: "{{ csv_content_no_header | unique }}"
+      # Utilise le filtre `unique` pour supprimer les doublons de la liste de lignes
+
+    - name: Suppression de doublons
+      ansible.builtin.set_fact:
+        csv_content_uniq_sort: "{{ csv_content_uniq | sort }}"
+      # Utilise le filtre `unique` pour supprimer les doublons de la liste de lignes
+
+    - name: Afficher le contenu du CSV pour vérification
+      ansible.builtin.debug:
+        var: csv_content
+      # Affiche le contenu original du fichier CSV
+
+    - name: Afficher le contenu du CSV sans doublons pour vérification
+      ansible.builtin.debug:
+        var: csv_content_uniq
+      # Affiche le contenu du fichier CSV après suppression des doublons
+
+    - name: Afficher le contenu du CSV sans doublons pour vérification
+      ansible.builtin.debug:
+        var: csv_content_uniq_sort
+      # Affiche le contenu du fichier CSV après suppression des doublons et Dans l'ordre

@@ -1,0 +1,20 @@
+---
+- name: Traitement du CSV température
+  hosts: localhost
+  gather_facts: no
+  vars:
+    csv_file: "./temperature.csv"
+
+  tasks:
+    - name: Lire, nettoyer et traiter le fichier CSV
+      ansible.builtin.set_fact:
+        csv_processed: |
+          {%- set lines = lookup('file', csv_file).splitlines() -%}
+          {%- set no_header = lines | reject('equalto', 'time,temperature') | list -%}
+          {%- set unique_lines = no_header | unique -%}
+          {{ unique_lines }}
+      # Lit le fichier, supprime l'en-tête, supprime les doublons
+
+    - name: Afficher le contenu traité du CSV pour vérification
+      ansible.builtin.debug:
+        var: csv_processed
