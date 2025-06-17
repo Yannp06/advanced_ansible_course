@@ -1,0 +1,28 @@
+---
+- name: Traitement du CSV température
+  hosts: localhost
+  gather_facts: no
+  vars:
+    csv_file: "./temperature.csv"
+
+  tasks:
+    - name: Lire le fichier CSV
+      ansible.builtin.slurp:
+        src: "{{ csv_file }}"
+      register: csv_content
+    - name: Convertir le contenu base64 en chaîne
+      set_fact:
+        csv_text: "{{ csv_content.content | b64decode }}"
+    - name: Convertir CSV en liste de dictionnaires
+      set_fact:
+        csv_list: |
+          {% set lines = csv_text.split('\n')[1:] %}
+          {% set result = [] %}
+          {% for line in lines if line | trim != '' %}
+            {% set parts = line.split(',') | map('trim') | list %}
+            {% if parts | length == 2 %}
+              {% set item = {'time': parts[0], 'temperature': parts[1]} %}
+              {% set _ = result.append(item) %}
+            {% endif %}
+          {% endfor %}
+          {{ result }}
