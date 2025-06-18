@@ -1,0 +1,18 @@
+galaxy_info:
+  author: YannP
+  description: Rôle Ansible pour installer WordPress
+  company: UCN
+  license: license (GPLv2, MIT, etc.)
+  min_ansible_version: 2.9
+  platforms:
+    - name: Ubuntu
+      versions:
+        - all
+  galaxy_tags:
+    - wordpress
+    - web
+    - php
+    - mysql
+
+dependencies: []
+
