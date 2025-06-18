@@ -1,5 +1,0 @@
----
-- name: confwpok
-  ansible.builtin.service:
-    name: apache2
-    state: restarted

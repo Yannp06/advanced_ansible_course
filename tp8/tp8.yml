@@ -1,7 +1,0 @@
----
-- name: Installer WordPress
-  hosts: web
-  become: true
-  roles:
-    - wordpress
-      # les dépendances sont dans les tasks du module.
