@@ -1,0 +1,10 @@
+{%- set lines = lookup('file', csv_file).splitlines() -%}
+{%- set result = [] -%}
+{%- for line in lines[1:] if line | trim != '' -%}
+  {%- set parts = line.split(',') | map('trim') | list -%}
+  {%- if parts | length == 2 -%}
+    {%- set _ = result.append({'time': parts[0], 'temperature': parts[1]}) -%}
+  {%- endif -%}
+{%- endfor -%}
+{{ result | unique | sort(attribute='time') | to_nice_yaml(indent=2) }}
+

@@ -1,0 +1,4 @@
+---
+api_url: "https://api.open-meteo.com/v1/forecast?latitude=48.86&longitude=2.33&hourly=temperature_2m&timezone=auto"
+csv_file: "./temperature.csv"
+

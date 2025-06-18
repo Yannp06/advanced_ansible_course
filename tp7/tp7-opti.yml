@@ -1,0 +1,39 @@
+---
+- name: Traitement du CSV température
+  hosts: localhost
+  gather_facts: no
+  vars_files:
+    - vars/main.yml
+
+  tasks:
+    - name: Récupérer l'heure actuelle du système en GMT
+      ansible.builtin.command: date -u +%H
+      register: current_hour_gmt
+
+    - name: Lire et traiter le fichier CSV
+      ansible.builtin.set_fact:
+        csv_processed: "{{ lookup('template', 'templates/splitsortuniqcsv.j2') | from_yaml }}"
+    
+          
+    - name: Récupérer la température actuelle depuis l'API Open-Meteo
+      ansible.builtin.uri:
+        url: "{{ api_url }}"
+        return_content: yes
+      register: api_response
+
+    - name: Extraire la température actuelle de l'API
+      ansible.builtin.set_fact:
+        current_temperature: "{{ (api_response.json.hourly.temperature_2m | first) | round(1) | float }}"
+
+    - name: Trouver la température correspondante dans le CSV
+      ansible.builtin.set_fact:
+        corresponding_csv_temperature: |
+          {%- for item in csv_processed -%}
+            {%- if item.time | regex_replace(':.*', '') == current_hour_gmt.stdout -%}
+              {{ item.temperature | float }}
+            {%- endif -%}
+          {%- endfor -%}
+
+    - name: Afficher les températures et la comparaison
+      ansible.builtin.debug:
+        msg: "{{ lookup('template', 'templates/difftemp.j2') }}"
