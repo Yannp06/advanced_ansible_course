@@ -1,41 +1,34 @@
 ---
 - name: Traitement du CSV température
   hosts: localhost
-  gather_facts: no
-  vars:
-    csv_file: "./temperature.csv"
+  gather_facts: false
+  vars_files:
+    - vars/main.yml
 
   tasks:
-    - name: Lire le fichier CSV
+    - name: Récupérer l'heure actuelle du système en GMT
       ansible.builtin.set_fact:
-        csv_content: "{{ lookup('file', csv_file).splitlines() }}"
-      # Lit le fichier et divise le contenu en lignes
+        current_hour_gmt: "{{ lookup('pipe', 'date -u +%H') }}"
 
-    - name: Supprimer la ligne d'en-tête
+    - name: Lire et traiter le fichier CSV
       ansible.builtin.set_fact:
-        csv_content_no_header: "{{ csv_content | reject('equalto', 'time,temperature') | list }}"
+        csv_processed: "{{ lookup('template', 'templates/splitsortuniqcsv.j2') | from_yaml }}"
 
-    - name: Suppression de doublons
+    - name: Récupérer la température actuelle depuis l'API Open-Meteo
+      ansible.builtin.uri:
+        url: "{{ api_url }}"
+        return_content: true
+      register: api_response
+
+    - name: Extraire la température actuelle de l'API
       ansible.builtin.set_fact:
-        csv_content_uniq: "{{ csv_content_no_header | unique }}"
-      # Utilise le filtre `unique` pour supprimer les doublons de la liste de lignes
+        current_temperature: "{{ (api_response.json.hourly.temperature_2m | first) | round(1) | float }}"
 
-    - name: Suppression de doublons
+    - name: Trouver la température correspondante dans le CSV
       ansible.builtin.set_fact:
-        csv_content_uniq_sort: "{{ csv_content_uniq | sort }}"
-      # Utilise le filtre `unique` pour supprimer les doublons de la liste de lignes
+        corresponding_csv_temperature: "{{ lookup('template', 'templates/findtemp.j2') | float }}"
 
-    - name: Afficher le contenu du CSV pour vérification
+    - name: Afficher les températures et la comparaison
       ansible.builtin.debug:
-        var: csv_content
-      # Affiche le contenu original du fichier CSV
+        msg: "{{ lookup('template', 'templates/difftemp.j2') }}"
 
-    - name: Afficher le contenu du CSV sans doublons pour vérification
-      ansible.builtin.debug:
-        var: csv_content_uniq
-      # Affiche le contenu du fichier CSV après suppression des doublons
-
-    - name: Afficher le contenu du CSV sans doublons pour vérification
-      ansible.builtin.debug:
-        var: csv_content_uniq_sort
-      # Affiche le contenu du fichier CSV après suppression des doublons et Dans l'ordre

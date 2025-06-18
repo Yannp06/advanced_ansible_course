@@ -1,7 +1,7 @@
-Heure actuelle du système en GMT: {{ current_hour_gmt.stdout }}h
+Heure actuelle du système en GMT: {{ current_hour_gmt }}h
 Température actuelle de l'API: {{ current_temperature }}°C
 {% if corresponding_csv_temperature | default(false) %}
-Température du CSV à {{ current_hour_gmt.stdout }}h: {{ corresponding_csv_temperature }}°C
+Température du CSV à {{ current_hour_gmt }}h: {{ corresponding_csv_temperature }}°C
 {% if current_temperature > corresponding_csv_temperature %}
 Il fait plus chaud actuellement que dans les données du CSV.
 {% elif current_temperature < corresponding_csv_temperature %}
