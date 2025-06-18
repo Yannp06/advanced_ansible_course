@@ -31,4 +31,3 @@
     - name: Afficher les températures et la comparaison
       ansible.builtin.debug:
         msg: "{{ lookup('template', 'templates/difftemp.j2') }}"
-
