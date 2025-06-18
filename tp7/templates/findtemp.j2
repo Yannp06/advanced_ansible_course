@@ -1,0 +1,6 @@
+{%- for item in csv_processed -%}
+  {%- if item.time | regex_replace(':.*', '') == current_hour_gmt.stdout -%}
+    {{ item.temperature | float }}
+  {%- endif -%}
+{%- endfor -%}
+

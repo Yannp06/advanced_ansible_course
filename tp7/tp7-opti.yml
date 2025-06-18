@@ -27,12 +27,7 @@
 
     - name: Trouver la température correspondante dans le CSV
       ansible.builtin.set_fact:
-        corresponding_csv_temperature: |
-          {%- for item in csv_processed -%}
-            {%- if item.time | regex_replace(':.*', '') == current_hour_gmt.stdout -%}
-              {{ item.temperature | float }}
-            {%- endif -%}
-          {%- endfor -%}
+        corresponding_csv_temperature: "{{ lookup('template', 'templates/findtemp.j2') | float }}" 
 
     - name: Afficher les températures et la comparaison
       ansible.builtin.debug:
